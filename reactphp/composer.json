@@ -1,0 +1,7 @@
+{
+    "require": {
+        "react/async": "^4.0",
+        "react/event-loop": "^1.3.0",
+        "react/http": "^1.8"
+    }
+}
