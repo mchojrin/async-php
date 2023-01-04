@@ -1,8 +1,11 @@
 build:
-	docker build . -t asyncphp
+	docker-compose build
+
+up:
+	docker-compose up -d
 
 run-sync:
-	docker run -v $(shell pwd)/sync:/app:rw -p 8080:8080 -t asyncphp php index.php
+	docker-compose run php cd sync; php index.php
 
 run-reactphp:
 	docker run -v $(shell pwd)/reactphp:/app:rw -p 8080:8080 -t asyncphp php index.php

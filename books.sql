@@ -9,4 +9,4 @@ CREATE TABLE `book` (
   TITLE VARCHAR(255)
 );
 
-INSERT INTO `book` (TITLE) VALUES ("The catcher in the rye", "Game of Thrones");
+INSERT INTO `book` (TITLE) VALUES ("The catcher in the rye"), ("Game of Thrones");
