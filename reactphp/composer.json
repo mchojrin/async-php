@@ -1,6 +1,12 @@
 {
     "require": {
         "react/async": "^4.0",
-        "react/http": "^1.8"
+        "react/filesystem": "^0.2@dev",
+        "react/mysql": "^0.6@dev"
+    },
+    "config": {
+        "allow-plugins": {
+            "wyrihaximus/composer-update-bin-autoload-path": true
+        }
     }
 }
