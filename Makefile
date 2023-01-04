@@ -18,3 +18,6 @@ run-amphp:
 
 bash:
 	docker run --user $(shell id -u) -v $(shell pwd):/app -it asyncphp bash
+
+root-bash:
+	docker run --user $(shell id -u) -v $(shell pwd):/app -it asyncphp bash
