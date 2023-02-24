@@ -1,39 +1,36 @@
 <?php
 
 declare(strict_types=1);
-
-use React\Filesystem\Factory;
-use React\Filesystem\Node\FileInterface;
-
 require 'vendor/autoload.php';
 
 $before = microtime(true);
 
-//Factory::create()->detect(__FILE__)->then(function (FileInterface $file) {
-//    return $file->getContents();
-//})->then(static function (string $contents): void {
-//    echo $contents;
-//})->done();
+$browser = new React\Http\Browser();
+$urls = [
+    "Cats" => "https://meowfacts.herokuapp.com/",
+    "Dogs" => "https://dogapi.dog/api/v2/breeds/68f47c5a-5115-47cd-9849-e45d3c378f12",
+    "Calendar" => "http://calapi.inadiutorium.cz/api/v0/en/calendars/default/today",
+];
 
-$factory = new React\MySQL\Factory();
-$connection = $factory->createLazyConnection("homestead:secret@database/books");
+$promises = [];
+foreach ($urls as $name => $url) {
+    $promises[$name] = $browser
+        ->get($url)
+        ->then(
+            function (Psr\Http\Message\ResponseInterface $response) use ($name) {
+                echo "$name API response:" . PHP_EOL;
+                echo $response->getBody() . PHP_EOL;
+            },
+            function (Exception $e) {
+                echo 'Error: ' . $e->getMessage() . PHP_EOL;
+            });
+}
 
-$connection->query("SELECT * FROM book")->then(function (QueryResult $command) {
-    if (isset($command->resultRows)) {
-        // this is a response to a SELECT etc. with some rows (0+)
-        print_r($command->resultFields);
-        print_r($command->resultRows);
-        echo count($command->resultRows) . ' row(s) in set' . PHP_EOL;
-    } else {
-        // this is an OK message in response to an UPDATE etc.
-        if ($command->insertId !== 0) {
-            var_dump('last insert ID', $command->insertId);
-        }
-        echo 'Query OK, ' . $command->affectedRows . ' row(s) affected' . PHP_EOL;
+try {
+    React\Async\await(React\Promise\all($promises));
+    echo "Time elapsed: ".(microtime(true) - $before).PHP_EOL;
+} catch (Throwable $e) {
+    foreach ($promises as $promise) {
+        $promise->cancel();
     }
-}, function (Exception $error) {
-    // the query was not executed successfully
-    echo 'Error: ' . $error->getMessage() . PHP_EOL;
-});
-
-echo "Time elapsed: ".(microtime(true) - $before).PHP_EOL;
+}

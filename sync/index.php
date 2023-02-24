@@ -7,7 +7,6 @@ $urls = [
     "Cats" => "https://meowfacts.herokuapp.com/",
     "Dogs" => "https://dogapi.dog/api/v2/breeds/68f47c5a-5115-47cd-9849-e45d3c378f12",
 ];
-echo "Fetching from remote APIs...".PHP_EOL;
 
 foreach ($urls as $name => $url) {
     echo "$name API response:".PHP_EOL;

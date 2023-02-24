@@ -1,45 +1,32 @@
 <?php
 
-require_once 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-use Amp\Http\Client\HttpClientBuilder;
-use Amp\Http\Client\HttpException;
-use Amp\Http\Client\Request;
-use Amp\Http\Client\Response;
-use Amp\Loop;
+$client = new Amp\Artax\DefaultClient;
+$before = microtime(true);
+$promises = [];
 
-Loop::run(static function () use ($argv): \Generator {
-    $uris = [
-        "https://google.com/",
-        "https://github.com/",
-        "https://stackoverflow.com/",
-    ];
+$urls = [
+    "Cats" => "https://meowfacts.herokuapp.com/",
+    "Dogs" => "https://dogapi.dog/api/v2/breeds/68f47c5a-5115-47cd-9849-e45d3c378f12",
+    "Calendar" => "http://calapi.inadiutorium.cz/api/v0/en/calendars/default/today",
+];
 
-    // Instantiate the HTTP client
-    $client = HttpClientBuilder::buildDefault();
+foreach ($urls as $name => $url) {
+    $promises[$url] = Amp\call(function () use ($client, $url, $name) {
+        $response = yield $client->request($url);
+        $body = yield $response->getBody();
 
-    $requestHandler = static function (string $uri) use ($client): \Generator {
-        /** @var Response $response */
-        $response = yield $client->request(new Request($uri));
+        echo "$name API response:".PHP_EOL."$body".PHP_EOL;
 
-        return yield $response->getBody()->buffer();
-    };
+        return $url;
+    });
+}
 
-    try {
-        $promises = [];
+try {
+    $responses = Amp\Promise\wait(Amp\Promise\all($promises));
 
-        foreach ($uris as $uri) {
-            $promises[$uri] = Amp\call($requestHandler, $uri);
-        }
-
-        $bodies = yield $promises;
-
-        foreach ($bodies as $uri => $body) {
-            print $uri . " - " . \strlen($body) . " bytes" . PHP_EOL;
-        }
-    } catch (HttpException $error) {
-        // If something goes wrong Amp will throw the exception where the promise was yielded.
-        // The HttpClient::request() method itself will never throw directly, but returns a promise.
-        echo $error;
-    }
-});
+    echo "Time elapsed: " . (microtime(true) - $before) . PHP_EOL;
+} catch (Throwable $e) {
+    die("Failed waiting for promises: ".$e->getMessage());
+}
